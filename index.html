@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="phaser.js"></script>
+
+        <style>
+            body{
+                margin: 0px;
+            }
+        </style>
+    </head>
+    <body>
+        <script>
+          var game= new Phaser.Game(window.innerWidth,window.innerHeight,Phaser.CANVAS,'Game',{ preload: preload, create: create, update: update, render:render });
+          var player;
+          var space;
+          var coin_sound;
+          var bullet_sound;
+          var cursors;
+          //var coins;
+          var bullets;
+          var score=0;
+          var score_text;
+          function preload(){
+              game.load.image('jet','jet.png')
+              game.load.image('space','starfield.png')
+              game.load.image('coin','coin.png')
+              game.load.image('bullet','bullet.png')
+              game.load.audio('coin_touch','metal.wav')
+              game.load.audio('bullet_touch','pew.wav')
+              game.load.image('bomb','bomb6.png')
+          }
+          function create(){
+            
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+            space= game.add.tileSprite(0,0,window.innerWidth,window.innerHeight,'space')
+            console.log(space)
+            player= game.add.sprite(200,200,'jet')
+            
+            player.anchor.set(0.5,0.5);
+            cursors=game.input.keyboard.createCursorKeys();
+            coins=game.add.group();
+            coin_sound=game.add.audio('coin_touch');
+            bullet_sound=game.add.audio('bullet_touch');
+            
+            for (let i = 0; i <10 ; i++) {
+                coin=coins.create(game.rnd.between(0,window.innerWidth),game.rnd.between(0,window.innerHeight),'coin');
+                coin.anchor.set(0.5,0.5);
+                player.scale.set(2,2);
+                game.physics.arcade.enable(coin);
+                coin.body.mass=-10000
+            }
+            bombs=game.add.group()
+            for (let i = 0; i <10 ; i++) {
+                bomb=bombs.create(game.rnd.between(0,window.innerWidth),game.rnd.between(0,window.innerHeight),'bomb');
+                bomb.anchor.set(0.5,0.5);
+                game.physics.arcade.enable(bomb);
+                bomb.body.mass=1000
+            }
+            bullets=game.add.group()
+            game.physics.arcade.enable(player);
+            player.body.velocity.x= 4*(game.input.x - player.x);
+            player.body.velocity.y= 4*(game.input.y - player.y);
+            console.log(player);
+            score_text= game.add.text(100,100,"Score:0",{font: "32px Comic Sans MS",fill: "#fff"});//json object
+          }
+          function update(){
+              //player.x=game.input.x
+              //player.y=game.input.y
+            space.tilePosition.y+=2;
+            //collision
+            game.physics.arcade.overlap(player,coins,handler,processor,this);
+            game.physics.arcade.overlap(bullets,coins,bullet_check,bullet_processor,this);
+            game.physics.arcade.collide(player,bombs,handler1,processor1,this);
+            //game.physics.arcade.collide(bullets,coins,bullet_check,bullet_processor,this);
+            //velocity
+            player.body.velocity.x= game.input.x - player.x;
+            player.body.velocity.y= game.input.y - player.y;
+            //angles
+            degree=Math.atan2((game.input.y-player.y),(game.input.x-player.x))*180/Math.PI+90;
+            player.angle=degree;
+            //check for right angles
+            score_text.setText("Score: "+score);
+          
+            
+              
+          }
+          function render(){
+            // game.debug.text("scores:"+score,100,100);
+            //   bullets.children.forEach(bullet => {
+            //       bullet.scale.x+=0.01;
+            //       bullet.scale.y+=0.01;
+            //     //   if (bullet.scale.x<0||bullet.scale.y<0){
+                    
+            //     //   }
+            //   });
+              if (cursors.up.isDown){
+                shoot();
+            }
+
+          }
+          function handler(p,c){
+              return true;
+          }
+          function processor(p,c){
+              console.log("BOOM");
+              score++;
+              coin_sound.play();
+              c.x=game.rnd.between(0,window.innerWidth);
+              c.y=game.rnd.between(0,window.innerHeight);
+          }
+          function handler1(p,s){
+              return true;
+          }
+          function processor1(p,s){
+              console.log("BOOM");
+              score--;
+              s.x=game.rnd.between(0,window.innerWidth);
+              s.y=game.rnd.between(0,window.innerHeight);
+          }
+          function bullet_check(b,c){
+              return true;
+          }
+          function bullet_processor(b,c){
+              console.log("BOOM BOOM");
+              score++;
+              coin_sound.play();
+              c.x=game.rnd.between(0,window.innerWidth);
+              c.y=game.rnd.between(0,window.innerHeight);
+          }
+          function shoot(){
+                bullet_sound.play();
+                bullet=bullets.create(player.x,player.y,'bullet');
+                bullet.anchor.set(0.5,0.5);
+                bullet.scale.set(0.05);
+                game.physics.arcade.enable(bullet);
+                // bullet.body.mass=10;
+                // bullet.body.bounce.x=1;
+                // bullet.body.bounce.y=1;
+                game.physics.arcade.enable(bullet);
+                bullet.body.velocity.x=1000*(Math.cos((player.angle-90)*Math.PI/180))
+                bullet.body.velocity.y=1000*(Math.sin((player.angle-90)*Math.PI/180))
+
+          }
+        </script>
+        <!-- <h1>welcome</h1> -->
+    </body>
+</html>
