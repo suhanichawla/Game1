@@ -9,3 +9,5 @@ Check it out for yourself!
 2. Run index.html
 
 ---
+
+Check it out at https://suhanichawla.github.io/Game1/
